@@ -1,0 +1,62 @@
+{
+	"name": "@imagina/sample-games-ui",
+	"version": "0.0.1",
+	"description": "Game Samples",
+	"main": "lib/index.js",
+	"typings": "lib/index.d.ts",
+	"scripts": {
+		"mock-api": "ts-node mock-api",
+		"build": "webpack",
+		"start": "webpack-dev-server --inline",
+		"mock:demo:random-game": "npm run mock-api -- --config=./demo/src/sample-games/mock-configs/random-game",
+		"mock:demo:slot-game": "npm run mock-api -- --config=./demo/src/sample-games/mock-configs/slot-game"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agauci/sample-games-ui.git"
+	},
+	"author": "Imagina Gaming",
+	"dependencies": {
+		"@imagina/game-engine-client": "0.0.1",
+		"history": "^4.7.2",
+		"lodash": "^4.17.4",
+		"react": "^16.2.0",
+		"react-dom": "^16.2.0",
+		"react-redux": "^5.0.6",
+		"react-router": "^4.2.0",
+		"react-router-dom": "^4.2.2",
+		"rxjs": "^5.5.7"
+	},
+	"devDependencies": {
+		"@imagina/raml-to-typescript": "0.0.1",
+		"@types/history": "^4.6.2",
+		"@types/lodash": "^4.14.110",
+		"@types/react": "^16.0.31",
+		"@types/react-dom": "^16.0.3",
+		"@types/react-redux": "^5.0.14",
+		"@types/react-router": "^4.0.20",
+		"@types/react-router-dom": "^4.2.7",
+		"antd": "^3.1.0",
+		"awesome-typescript-loader": "^3.2.3",
+		"css-loader": "^0.28.7",
+		"dts-bundle-webpack": "^1.0.0",
+		"fork-ts-checker-webpack-plugin": "^0.4.2",
+		"happypack": "^4.0.1",
+		"less": "^2.7.3",
+		"less-loader": "^4.1.0",
+		"node-sass": "^4.9.0",
+		"osprey-mock-service": "^0.2.1",
+		"sass-loader": "^7.0.3",
+		"source-map-loader": "^0.2.3",
+		"style-loader": "^0.19.1",
+		"ts-import-plugin": "^1.5.2",
+		"ts-loader": "^4.3.1",
+		"ts-node": "^3.3.0",
+		"tslint": "^5.6.0",
+		"tslint-loader": "^3.5.3",
+		"typescript": "2.8.1",
+		"webpack": "^4.11.0",
+		"webpack-cli": "^3.0.2",
+		"webpack-dev-server": "^3.1.4"
+	}
+}

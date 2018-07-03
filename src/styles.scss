@@ -1,0 +1,160 @@
+
+.ant-card {
+	margin-bottom: 20px !important;
+}
+
+.game-interface {
+
+	.loader {
+		padding: 50px;
+		text-align: center;
+	}
+
+	.reels {
+		text-align: center;
+		padding: 10px;
+
+		.reel {
+			text-align: center;
+			padding: 10px;
+		
+			.slick-slide {
+				text-align: center;
+				height: 160px;
+				overflow: hidden;
+
+				img {
+					margin: auto;
+				}
+		
+				h3 {
+					color: white;
+					font-size: 40px;
+				}
+			}
+		
+			.ant-btn {
+				margin: 40px 0 20px 0 !important;
+			}
+		}
+		
+	}
+
+	h3 {
+		color: white !important;
+		font-size: 30px;
+	}
+
+	h4 {
+		color: white !important;
+		opacity: 0.5;
+		font-size: 20px;
+	}
+
+	.bet {
+		text-align: center;
+		padding: 10px;
+
+		.slick-slide {
+			text-align: center;
+			height: 100px;
+			overflow: hidden;
+		}
+	}
+
+	.credits {
+		text-align: center;
+		padding: 30px;
+
+		h3 {
+			margin: 0;
+		}
+	}
+
+	.buttons {
+		text-align: center;
+		padding: 10px;
+		
+			.ant-btn {
+				margin: 10px !important;
+	}
+
+		}
+
+		.game-panel {
+			height: 40px;
+	}
+
+	.ant-btn-group {
+		margin: 0 10px !important;
+
+		.ant-btn {
+			margin: 10px 0 !important;
+		}
+	}
+
+	@keyframes blink-win {
+		0% {
+			background-color: rgba(0, 255,0,1)
+		}
+		50% {
+			background-color: rgba(0, 255,0,0.7)
+		}
+		100% {
+			background-color: rgba(0, 255,0,1)
+		}
+	}
+
+	@keyframes blink-loss {
+		0% {
+			background-color: rgba(255,0,0,1)
+		}
+		50% {
+			background-color: rgba(255,0,0,0.7)
+		}
+		100% {
+			background-color: rgba(255,0,0,1)
+		}
+	}
+
+
+	.blinkable {
+		background: #1890ff;
+		-moz-transition:all 0.5s ease-in-out;
+		-webkit-transition:all 0.5s ease-in-out;
+		-o-transition:all 0.5s ease-in-out;
+		-ms-transition:all 0.5s ease-in-out;
+		transition:all 0.5s ease-in-out;
+		
+		padding: 30px 20px;
+	}
+
+	.blink-win {
+		-moz-animation:blink-win normal 1s infinite ease-in-out;
+		/* Firefox */
+		-webkit-animation:blink-win normal 1s infinite ease-in-out;
+		/* Webkit */
+		-ms-animation:blink-win normal 1s infinite ease-in-out;
+		/* IE */
+		animation:blink-win normal 1s infinite ease-in-out;
+		/* Opera */
+	}
+
+	.blink-loss {
+		-moz-animation:blink-loss normal 1s infinite ease-in-out;
+		/* Firefox */
+		-webkit-animation:blink-loss normal 1s infinite ease-in-out;
+		/* Webkit */
+		-ms-animation:blink-loss normal 1s infinite ease-in-out;
+		/* IE */
+		animation:blink-loss normal 1s infinite ease-in-out;
+		/* Opera */
+	}
+
+}
+
+.game-state-viewer {
+	pre {
+		font-size: 12px;
+	}
+}

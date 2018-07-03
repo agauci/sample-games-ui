@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+		"outDir": "lib/",
+		"sourceMap": true,
+        "declaration": true,
+		"strictNullChecks": true,
+		"jsx": "react",
+		"allowJs": false,
+        "target": "es5",
+		"module": "es2015",
+		"noImplicitAny": false,
+		"lib": ["es2015", "es2017", "dom"],
+		"moduleResolution": "node",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "noUnusedLocals": false,
+		"noUnusedParameters": true
+    },
+    "include": [
+		"src/**/*.ts",
+		"src/**/*.d.ts"
+    ],
+	"exclude": [
+		"src/**/*.spec.ts"
+	]
+}

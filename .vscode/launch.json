@@ -1,0 +1,27 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "Launch Program",
+                "program": "${workspaceRoot}/lib/index.js",
+                "outFiles": [
+                    "${workspaceRoot}/out/**/*.js"
+                ]
+            },
+
+			{
+                "name": "Mock API Script",
+                "type": "node",
+                "request": "launch",
+                "args": ["${workspaceRoot}/src/sample-games/mock-config/common/mock-api.ts", "--config=./src/sample-games/mock-configs/random-game"],
+                "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+                "sourceMaps": true,
+                "cwd": "${workspaceRoot}",
+				"protocol": "inspector",
+				"stopOnEntry": false
+			}
+        ]
+    }
