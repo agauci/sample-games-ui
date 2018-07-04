@@ -17,7 +17,7 @@
 	},
 	"author": "Imagina Gaming",
 	"dependencies": {
-		"@imagina/game-engine-client": "0.0.1",
+		"@imagina/game-engine-client": "^1.0.0",
 		"history": "^4.7.2",
 		"lodash": "^4.17.4",
 		"react": "^16.2.0",
@@ -28,7 +28,7 @@
 		"rxjs": "^5.5.7"
 	},
 	"devDependencies": {
-		"@imagina/raml-to-typescript": "0.0.1",
+		"@imagina/raml-to-typescript": "^1.0.0",
 		"@types/history": "^4.6.2",
 		"@types/lodash": "^4.14.110",
 		"@types/react": "^16.0.31",
@@ -54,7 +54,7 @@
 		"ts-node": "^3.3.0",
 		"tslint": "^5.6.0",
 		"tslint-loader": "^3.5.3",
-		"typescript": "2.8.1",
+		"typescript": "^2.9.2",
 		"webpack": "^4.11.0",
 		"webpack-cli": "^3.0.2",
 		"webpack-dev-server": "^3.1.4"
