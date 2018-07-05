@@ -15,8 +15,9 @@ Thumbs.db
 # Mac DS_Store Files
 .DS_Store
 
-# dist dir
-/dist
+# public dir
+/public/**/*.js
+/public/**/*.js.map
 
 # lib dir
 /lib
