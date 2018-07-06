@@ -59,7 +59,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 		return !this.state.firstBet && !this.state.prevWinBet && !this.state.prevHoldBet;
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		this.addSubscriptions(
 			// Subscribe to gameStarted selector to check when the game start procedure is ready
 			// Make sure that unsubscribe from any subscription when closing a component
@@ -109,6 +109,11 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 					} else {
 						let counter = 0;
 						let interval = setInterval(() => {
+							// Check if component still mounted and terminate interval if not to avoid error
+							if (!this.isMounted) {
+								clearInterval(interval);
+								return;
+							}
 							// Map count to a sequence from 1 to length of reel icons which repeats itself
 							let iconIndex = counter % this.getReelIcons(reelIndex).length;
 							let resultReel: Carousel = this.getReelCarousel(reelIndex);
@@ -166,9 +171,6 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 				});
 			})
 		);
-	}
-
-	componentDidMount() {
 		// Dispatch start game action
 		this.gameClient.dispatcher.slotGame.startGame();
 	}

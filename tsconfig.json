@@ -16,7 +16,11 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
         "noUnusedLocals": false,
-		"noUnusedParameters": true
+		"noUnusedParameters": true,
+		"baseUrl": ".",
+		"paths": {
+			"rxjs/*": ["node_modules/rxjs/*"]
+		}
     },
     "include": [
 		"src/**/*.ts",
