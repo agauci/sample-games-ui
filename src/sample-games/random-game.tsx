@@ -38,7 +38,7 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 		return isBoolean(this.state.betWin) ? (this.state.betWin ? 'blink-win' : 'blink-loss') : '';
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		this.addSubscriptions(
 			// Subscribe to gameStarted selector to check when the game start procedure is ready
 			this.gameClient.selector.game.session.gameStateStarted$.subscribe(({ serverState, sharedState }) => {
@@ -84,6 +84,11 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 
 				let counter = 0;
 				let interval = setInterval(() => {
+					// Check if component still mounted and terminate interval if not to avoid error
+					if (!this.isMounted) {
+						clearInterval(interval);
+						return;
+					}
 					// Map count to a sequence from 1 to length of reel icons which repeats itself
 					let number = counter % 10;
 					// Change bet indicator to represent current bet (random or not)
@@ -137,9 +142,6 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 				});
 			})
 		);
-	}
-
-	componentDidMount() {
 		// Dispatch start game action
 		RandomGameClient.dispatcher.slotGame.startGame();
 	}

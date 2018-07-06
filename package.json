@@ -28,7 +28,7 @@
 		"rxjs": "5.5.7"
 	},
 	"devDependencies": {
-		"@imagina/raml-to-typescript": "^1.0.0",
+		"@imagina/raml-to-typescript": "^1.0.1",
 		"@types/history": "^4.6.2",
 		"@types/lodash": "^4.14.110",
 		"@types/react": "^16.0.31",
