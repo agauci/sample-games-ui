@@ -1,6 +1,6 @@
 {
 	"name": "@imagina/sample-games-ui",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Game Samples",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -17,7 +17,7 @@
 	},
 	"author": "Imagina Gaming",
 	"dependencies": {
-		"@imagina/game-engine-client": "^1.0.2",
+		"@imagina/game-engine-client": "^1.1.2",
 		"history": "^4.7.2",
 		"lodash": "^4.17.4",
 		"react": "^16.2.0",
@@ -28,7 +28,7 @@
 		"rxjs": "5.5.7"
 	},
 	"devDependencies": {
-		"@imagina/raml-to-typescript": "^1.0.1",
+		"@imagina/raml-to-typescript": "^1.0.2",
 		"@types/history": "^4.6.2",
 		"@types/lodash": "^4.14.110",
 		"@types/react": "^16.0.31",

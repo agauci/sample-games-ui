@@ -29,10 +29,10 @@ export class GameStateViewer extends BaseComponent<GameStateViewerProps, GameSta
 					gameSharedState: state.sharedState
 				});
 			}),
-			gameClient.selector.game.activity.gameActivityDone$.subscribe((result) => {
+			gameClient.selector.game.activity.gameActivityDone$.subscribe(({ gameActivity, gameActivityResults }) => {
 				this.setState({
-					lastActivity: result.activity,
-					lastActivityResults: result.activityResults
+					lastActivity: gameActivity,
+					lastActivityResults: gameActivityResults
 				});
 			})
 		);
