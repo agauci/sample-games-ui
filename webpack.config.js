@@ -101,25 +101,7 @@ module.exports = {
 		]
 	},
 	plugins: [
-		// new WebpackPreBuildPlugin(() => compileAPITypes()),
-		// new HappyPack({
-        //     id: 'ts',
-        //     threads: 2,
-        //     loaders: [
-        //         {
-        //             path: 'ts-loader',
-        //             query: { happyPackMode: true }
-        //         }
-        //     ]
-        // }),
-		new ForkTsCheckerWebpackPlugin(),
-		new webpack.HotModuleReplacementPlugin(),
-		new webpack.WatchIgnorePlugin([
-			path.resolve(__dirname, '../src/typings/game-engine/'),
-			path.resolve(__dirname, '../src/lib/actions/api.ts'),
-			path.resolve(__dirname, '../src/lib/clients/api.ts'),
-			path.resolve(__dirname, '../src/lib/epics/api.ts')
-		])
+		new webpack.HotModuleReplacementPlugin()
 	],
 	devtool: 'source-map',
 	devServer: {

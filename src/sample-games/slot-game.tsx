@@ -90,13 +90,13 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 					prevHoldBet: !!this.state.holdReels.length
 				});
 
-				this.gameClient.selector.game.activity.gameActivityDone$.delayAtLeastRandom(500, 1000).first().toPromise().then((result) => {
+				this.gameClient.selector.game.activity.gameActivityDone$.delayAtLeastRandom(500, 1000).first().toPromise().then(({ gameActivityResults, gameState }) => {
 					// Set the state of the game component accordingly
 					this.setState({
-						sharedState: result.activity.sharedState,
-						serverState: result.activity.serverState,
-						results: result.activityResults,
-						prevWinBet: !!result.activityResults.length,
+						sharedState: gameState.sharedState,
+						serverState: gameState.serverState,
+						results: gameActivityResults,
+						prevWinBet: !!gameActivityResults.length,
 					});
 				});
 
@@ -156,7 +156,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			// Subscribe to gameStarted$
 			// This will fire when both the game engine and the game interface are started
 			// It means that the interface is ready from loading the assets needed and the game engine is ready to accept the first activity
-			this.gameClient.selector.game.global.gameStarted$.subscribe(gameStarted => {
+			this.gameClient.selector.game.status.gameStarted$.subscribe(gameStarted => {
 				if (gameStarted) {
 					this.setState({ gameStarted: gameStarted });
 				}
@@ -165,7 +165,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			// Subscribe to gameReady$
 			// This will fire when both the game engine and the game interface are ready
 			// It means that the interface is ready from displaying the results of an activity needed and the game engine is ready to accept the next activity
-			this.gameClient.selector.game.global.gameReady$.subscribe(gameReady => {
+			this.gameClient.selector.game.status.gameReady$.subscribe(gameReady => {
 				this.setState({
 					gameReady: gameReady
 				});

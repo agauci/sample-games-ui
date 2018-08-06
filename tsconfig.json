@@ -2,7 +2,6 @@
     "compilerOptions": {
 		"outDir": "lib/",
 		"sourceMap": true,
-        "declaration": true,
 		"strictNullChecks": true,
 		"jsx": "react",
 		"allowJs": false,
@@ -16,11 +15,7 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
         "noUnusedLocals": false,
-		"noUnusedParameters": true,
-		"baseUrl": ".",
-		"paths": {
-			"rxjs/*": ["node_modules/rxjs/*"]
-		}
+		"noUnusedParameters": true
     },
     "include": [
 		"src/**/*.ts",
