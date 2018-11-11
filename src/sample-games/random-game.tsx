@@ -5,6 +5,7 @@ import { Row, Col, Button, Carousel } from 'antd';
 import { ProtectedStatePayload, MutualStatePayload, BalancesPayload, GameRoundResultPayload } from './types/random-game';
 import { RandomGameClient } from './clients/random-game';
 import { BaseGame, BaseGameState } from './base/base-game';
+import { Reel } from '../components/game/reel';
 
 export interface RandomGameState extends BaseGameState<MutualStatePayload, ProtectedStatePayload, BalancesPayload, GameRoundResultPayload> {
 	reel?: number;
@@ -41,19 +42,18 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 	componentDidMount() {
 		this.addSubscriptions(
 			// Subscribe to gameStarted selector to check when the game start procedure is ready
-			this.gameClient.selector.game.session.gameStateStarted$.subscribe(({ serverState, sharedState }) => {
+			this.gameClient.selector.game.session.gameSessionStarted$.subscribe(({ gameState }) => {
 				// Set the initial game state
 				this.setState({
-					serverState: serverState,
-					sharedState: sharedState,
-					creditsBalance: serverState.balances.credits_meter
+					gameState,
+					creditsBalance: gameState!.serverState.balances.credits_meter
 				});
 				// Set the next activity parameters in case of an Autoplay
 				this.gameClient.dispatcher.slotGame.setNextActivity({
-					betCredits: 1,
 					nextActivityParams: {
+						betCredits: 1,
 						type: 'BET',
-						mutualState: sharedState.mutualState
+						mutualState: gameState!.sharedState.mutualState
 					},
 					autoPlayDelay: 2000
 				});
@@ -64,7 +64,7 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 			this.gameClient.selector.game.activity.gameActivityStarted$.subscribe((activity) => {
 				// Set the state of the component to be ready for initializing an action
 				this.setState({
-					serverState: undefined,
+					gameState: undefined,
 					betWin: null,
 					creditsBalance: this.state.creditsBalance! - 1,
 				});
@@ -73,55 +73,15 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 					this.betReel.goTo(activity.sharedState.mutualState.number_chosen);
 				}
 
-				this.gameClient.selector.game.activity.gameActivityDone$.delayAtLeastRandom(500, 1000).first().toPromise().then(({ gameState, gameActivityResults }) => {
-					// Set the state of the game component accordingly
-					this.setState({
-						sharedState: gameState.sharedState,
-						serverState: gameState.serverState,
-						results: gameActivityResults,
-					});
+				this.setState({ reelSpinning: true });
+			}),
+
+			this.gameClient.selector.game.activity.gameActivityDone$.subscribe(({ gameState, gameActivityResults }) => {
+				// Set the state of the game component accordingly
+				this.setState({
+					gameState,
+					gameResults: gameActivityResults,
 				});
-
-				let counter = 0;
-				let interval = setInterval(() => {
-					// Check if component still mounted and terminate interval if not to avoid error
-					if (!this.isMounted) {
-						clearInterval(interval);
-						return;
-					}
-					// Map count to a sequence from 1 to length of reel icons which repeats itself
-					let number = counter % 10;
-					// Change bet indicator to represent current bet (random or not)
-					if (this.resultReel) {
-						this.resultReel.goTo(number);
-					}
-					// Stop spinning when the serverState is available and when the reel is in the position that matches the result
-					if (this.state.serverState && this.state.serverState.protectedState.number_generated === number) {
-						clearInterval(interval);
-
-						// Update state to show win/loss and updated balance
-						this.setState({
-							betWin: !!(this.state.results && this.state.results.length),
-							creditsBalance: this.state.serverState.balances.credits_meter,
-						});
-
-						// Set the next activity parameters in case of an Autoplay
-						if (this.state.sharedState) {
-							this.gameClient.dispatcher.slotGame.setNextActivity({
-								betCredits: 1,
-								nextActivityParams: {
-									type: 'BET',
-									mutualState: this.state.sharedState && this.state.sharedState.mutualState,
-								},
-								autoPlayDelay: 2000
-							});
-						}
-						// Let the game engine know that the frontend is ready from showing the result
-						this.gameClient.dispatcher.slotGame.setGameReady();
-					} else {
-						counter++;
-					}
-				}, 115);
 			}),
 
 			// Subscribe to gameStarted$
@@ -148,12 +108,12 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 
 	componentWillUpdate() {
 		// Upon game start set the game components in sync with the initial state
-		if (this.state.serverState && this.state.sharedState) {
+		if (this.state.gameState) {
 			if (this.betReel) {
-				this.betReel.goTo(this.state.sharedState.mutualState.number_chosen);
+				this.betReel.goTo(this.state.gameState.sharedState.mutualState.number_chosen);
 			}
 			if (this.resultReel) {
-				this.resultReel.goTo(this.state.serverState.protectedState.number_generated);
+				this.resultReel.goTo(this.state.gameState.serverState.protectedState.number_generated);
 			}
 		}
 	}
@@ -174,6 +134,31 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 		});
 	}
 
+	onSpinResultReady = () => {
+		if (this.state.gameState) {
+			// Update state to show win/loss and updated balance
+			this.setState({
+				betWin: !!(this.state.gameResults && this.state.gameResults.length),
+				creditsBalance: this.state.gameState.serverState.balances.credits_meter,
+				reelSpinning: false
+			});
+
+			// Set the next activity parameters in case of an Autoplay
+			if (this.state.gameState.sharedState) {
+				this.gameClient.dispatcher.slotGame.setNextActivity({
+					nextActivityParams: {
+						betCredits: 1,
+						type: 'BET',
+						mutualState: this.state.gameState && this.state.gameState.sharedState.mutualState,
+					},
+					autoPlayDelay: 2000
+				});
+			}
+			// Let the game engine know that the frontend is ready from showing the result
+			this.gameClient.dispatcher.slotGame.setGameReady();
+		}
+	}
+
 	render() {
 		return this.renderGame(<div>
 			<Row>
@@ -182,9 +167,11 @@ export class RandomGame extends BaseGame<MutualStatePayload, ProtectedStatePaylo
 						<Col className='reels'>
 							<h4>RESULT</h4>
 							<Col className='reel'>
-								<Carousel vertical dots={false} speed={100} ref={(reel) => reel && (this.resultReel = reel)}>
-									{times(10).map(num => <div key={num}><h3>{num}</h3></div>)}
-								</Carousel>
+								<Reel
+									spinning={this.state.reelSpinning}
+									items={times(10)}
+									result={this.state.gameState && this.state.gameState.serverState.protectedState.number_generated}
+									onResultReady={this.onSpinResultReady}/>
 							</Col>
 						</Col>
 					</Row>

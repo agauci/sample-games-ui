@@ -2,17 +2,21 @@ import * as React from 'react';
 import times from 'lodash/times';
 import isBoolean from 'lodash/isBoolean';
 import includes from 'lodash/includes';
+import compact from 'lodash/compact';
 import isEqual from 'lodash/isEqual';
 import { Row, Col, Button, Carousel } from 'antd';
 import { ProtectedStatePayload, MutualStatePayload, BalancesPayload, ReelIcons, PlayerCoice, GameRoundResultPayload } from './types/slot-game';
 import { SlotGameClient } from './clients/slot-game';
 import { BaseGame, BaseGameState } from './base/base-game';
+import { Reel } from '../components/game/reel';
 
 export interface SlotGameState extends BaseGameState<MutualStatePayload, ProtectedStatePayload, BalancesPayload, GameRoundResultPayload> {
 	holdReels: number[];
 	bet: PlayerCoice;
 	betWin: boolean | null;
 	creditsBalance?: number;
+	reelsSpinning: boolean;
+	reelsStopped: string[];
 
 	// Used for hold disable check
 	firstBet: boolean,
@@ -30,7 +34,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 	container: HTMLDivElement;
 	betReel: Carousel;
-	resultReels: Partial<ReelDictionary<Carousel>> = {};
+	resultReels: Partial<ReelDictionary<Reel>> = {};
 	playerChoices: PlayerCoice[] = [PlayerCoice.BET_1, PlayerCoice.BET_5];
 
 	gameClient = SlotGameClient;
@@ -47,7 +51,9 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			betWin: null,
 			firstBet: true,
 			prevWinBet: false,
-			prevHoldBet: false
+			prevHoldBet: false,
+			reelsSpinning: false,
+			reelsStopped: []
 		};
 	}
 
@@ -63,17 +69,16 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 		this.addSubscriptions(
 			// Subscribe to gameStarted selector to check when the game start procedure is ready
 			// Make sure that unsubscribe from any subscription when closing a component
-			this.gameClient.selector.game.session.gameStateStarted$.subscribe(({ serverState, sharedState }) => {
+			this.gameClient.selector.game.session.gameSessionStarted$.subscribe(({ gameState }) => {
 				this.setState({
-					serverState: serverState,
-					sharedState: sharedState,
-					creditsBalance: serverState.balances.credits_meter
+					gameState,
+					creditsBalance: gameState!.serverState.balances.credits_meter
 				});
 				this.gameClient.dispatcher.slotGame.setNextActivity({
-					betCredits: this.getBetCredits(sharedState.mutualState),
 					nextActivityParams: {
+						betCredits: this.getBetCredits(gameState!.sharedState.mutualState.player_choice),
 						type: 'BET',
-						mutualState: sharedState.mutualState
+						mutualState: gameState!.sharedState.mutualState
 					},
 					autoPlayDelay: 2000
 				});
@@ -82,74 +87,28 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 			this.gameClient.selector.game.activity.gameActivityStarted$.subscribe(() => {
 				// Set the state of the component to be ready for initializing an action
+				let betCredits = this.getBetCredits(this.state.bet);
+
 				this.setState({
-					serverState: undefined,
+					gameState: undefined,
 					betWin: null,
-					creditsBalance: this.state.creditsBalance! - 1,
+					creditsBalance: this.state.creditsBalance! - betCredits,
 					firstBet: false,
-					prevHoldBet: !!this.state.holdReels.length
+					prevHoldBet: !!this.state.holdReels.length,
+					reelsSpinning: true,
+					reelsStopped: compact(Object.keys(this.resultReels).map((reelID, reelIndex) => {
+						// Check if reel is held (if yes return false)
+						return this.isReelHeld(reelIndex) && reelID || null;
+					}))
 				});
+			}),
 
-				this.gameClient.selector.game.activity.gameActivityDone$.delayAtLeastRandom(500, 1000).first().toPromise().then(({ gameActivityResults, gameState }) => {
-					// Set the state of the game component accordingly
-					this.setState({
-						sharedState: gameState.sharedState,
-						serverState: gameState.serverState,
-						results: gameActivityResults,
-						prevWinBet: !!gameActivityResults.length,
-					});
-				});
-
-				let reelsStopped: string[] = [];
-
-				Object.keys(this.resultReels).forEach((reelID, reelIndex) => {
-					// Check if reel is held (if yes return false)
-					if (this.isReelHeld(reelIndex)) {
-						reelsStopped.push(reelID);
-					} else {
-						let counter = 0;
-						let interval = setInterval(() => {
-							// Check if component still mounted and terminate interval if not to avoid error
-							if (!this.isMounted) {
-								clearInterval(interval);
-								return;
-							}
-							// Map count to a sequence from 1 to length of reel icons which repeats itself
-							let iconIndex = counter % this.getReelIcons(reelIndex).length;
-							let resultReel: Carousel = this.getReelCarousel(reelIndex);
-							if (resultReel) {
-								// Move reel carousel to show icon emmitted
-								resultReel.goTo(iconIndex);
-							}
-							// Stop spinning when the serverState is available and when the reel is in the position that matches the result
-							if (this.state.serverState && this.state.sharedState && isEqual(this.state.serverState.protectedState[reelID], this.getVisibleReelIcons(reelIndex, iconIndex))) {
-								clearInterval(interval);
-								reelsStopped.push(reelID);
-								// Check if all reels stopped
-								if (reelsStopped.length === 3) {
-									// Update state to show win/loss and updated balance
-									this.setState({
-										betWin: !!(this.state.results && this.state.results.length),
-										holdReels: this.state.sharedState.mutualState.reels_to_hold || [],
-										creditsBalance: this.state.serverState.balances.credits_meter,
-									});
-
-									// Let the game engine know that the frontend is ready from showing the result
-									this.gameClient.dispatcher.slotGame.setNextActivity({
-										betCredits: this.getBetCredits(this.state.sharedState.mutualState),
-										nextActivityParams: {
-											type: 'BET',
-											mutualState: this.state.sharedState.mutualState
-										},
-										autoPlayDelay: 2000
-									});
-									this.gameClient.dispatcher.slotGame.setGameReady();
-								}
-							} else {
-								counter++;
-							}
-						}, 120);
-					}
+			this.gameClient.selector.game.activity.gameActivityDone$.subscribe(({ gameActivityResults, gameState }) => {
+				// Set the state of the game component accordingly
+				this.setState({
+					gameState,
+					gameResults: gameActivityResults,
+					prevWinBet: !!gameActivityResults.length,
 				});
 			}),
 
@@ -177,22 +136,10 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 	componentWillUpdate() {
 		// Upon game start set the game components in sync with the initial state
-		if (this.state.firstBet && this.state.serverState && this.state.sharedState) {
-			// Set the reels to the initial state
-			if (Object.keys(this.resultReels).length === 3) {
-				Object.keys(this.resultReels).forEach((reelID, reelIndex) => {
-					let reelIcons = this.getReelIcons(reelIndex);
-					let resultReel = this.getReelCarousel(reelIndex);
-					reelIcons.forEach((_icon, iconIndex) => {
-						if (this.state.serverState && isEqual(this.state.serverState.protectedState[reelID], this.getVisibleReelIcons(reelIndex, iconIndex)) && resultReel) {
-							resultReel.goTo(iconIndex);
-						}
-					});
-				});
-			}
+		if (this.state.firstBet && this.state.gameState) {
 			// Set the bet to the initial state
 			if (this.betReel) {
-				switch (this.state.sharedState.mutualState.player_choice) {
+				switch (this.state.gameState.sharedState.mutualState.player_choice) {
 					case PlayerCoice.BET_1: this.betReel.goTo(0); break;
 					case PlayerCoice.BET_5: this.betReel.goTo(1); break;
 				}
@@ -206,7 +153,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 	getReelCarousel = (reelIndex: number) => this.resultReels[this.getReelIndex(reelIndex)];
 
-	setReelCarousel = (reelIndex: number, carousel: Carousel) => this.resultReels[this.getReelIndex(reelIndex)] = carousel;
+	setReelInstance = (reelIndex: number, instance: Reel) => this.resultReels[this.getReelIndex(reelIndex)] = instance;
 
 	getReelIcons = (reelIndex: number) => ReelIcons[this.getReelIndex(reelIndex)] as string[];
 
@@ -217,8 +164,8 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			.map(iconIndex => reelIcons[iconIndex]);
 	}
 
-	getBetCredits = (mutualState: MutualStatePayload) => {
-		switch (mutualState.player_choice) {
+	getBetCredits = (playerChoice: PlayerCoice) => {
+		switch (playerChoice) {
 			case PlayerCoice.BET_1: return 1;
 			case PlayerCoice.BET_5: return 5;
 		}
@@ -261,6 +208,36 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 		});
 	}
 
+	onSpinResultReady = (reelID: string) => {
+		if (this.state.gameState) {
+			let reelsStopped = [...this.state.reelsStopped, reelID];
+			this.setState({ reelsStopped });
+			// Check if all reels stopped
+			if (reelsStopped.length === 3) {
+
+				// Update state to show win/loss and updated balance
+				console.log(this.state.gameResults);
+				this.setState({
+					betWin: !!(this.state.gameResults && this.state.gameResults.length),
+					holdReels: this.state.gameState.sharedState.mutualState.reels_to_hold || [],
+					creditsBalance: this.state.gameState.serverState.balances.credits_meter,
+					reelsSpinning: false
+				});
+
+				// Let the game engine know that the frontend is ready from showing the result
+				this.gameClient.dispatcher.slotGame.setNextActivity({
+					nextActivityParams: {
+						betCredits: this.getBetCredits(this.state.gameState.sharedState.mutualState.player_choice),
+						type: 'BET',
+						mutualState: this.state.gameState.sharedState.mutualState
+					},
+					autoPlayDelay: 2000
+				});
+				this.gameClient.dispatcher.slotGame.setGameReady();
+			}
+		}
+	}
+
 	render() {
 		return this.renderGame(<div>
 			<Row>
@@ -270,11 +247,14 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 							<h4>REELS</h4>
 							<Row>
 								{times(3).map(reelIndex => <Col className='reel' span={8} key={reelIndex}>
-									<Carousel vertical dots={false} speed={100} ref={(reel) => reel && this.setReelCarousel(reelIndex, reel)}>
-										{this.getReelIcons(reelIndex)
-											.map((_icon, iconIndex) => <div key={iconIndex}>{this.getVisibleReelIcons(reelIndex, iconIndex)
-											.map((icon, index) => <img key={index} src={`images/symbols/${icon.toLowerCase()}.png`}/>)}</div>)}
-									</Carousel>
+									<Reel
+										ref={(reel) => reel && this.setReelInstance(reelIndex, reel)}
+										spinning={this.state.reelsSpinning && !this.isReelHeld(reelIndex)}
+										items={ReelIcons[this.getReelIndex(reelIndex)]}
+										spread={3}
+										result={this.state.gameState && this.state.gameState.serverState.protectedState[this.getReelIndex(reelIndex)]}
+										itemRender={(item: string, index) => <img key={index} src={`images/symbols/${item.toLowerCase()}.png`}/>}
+										onResultReady={() => this.onSpinResultReady(this.getReelIndex(reelIndex))}/>
 									<Button disabled={!this.state.gameReady || !this.holdsEnabled} type={this.isReelHeld(reelIndex) ? 'primary' : 'default'} onClick={() => this.toggleReelHold(reelIndex)}>
 										{this.isReelHeld(reelIndex) ? 'UNHOLD' : 'HOLD'}
 									</Button>

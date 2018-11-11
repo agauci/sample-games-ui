@@ -19,18 +19,30 @@
 			padding: 10px;
 		
 			.slick-slide {
-				text-align: center;
-				height: 160px;
+				height: 200px;
 				overflow: hidden;
 
-				img {
-					margin: auto;
+				.reel-slide {
+					height: 200px;
+					display: inline-flex !important;
+					flex-direction: column;
+					align-content: center;
+					justify-content: space-around;
+
+					.reel-item {
+						img {
+							margin: auto;
+						}
+				
+						h3 {
+							color: white;
+							font-size: 40px;
+							margin: 0;
+						}
+					}
 				}
-		
-				h3 {
-					color: white;
-					font-size: 40px;
-				}
+
+				
 			}
 		
 			.ant-btn {

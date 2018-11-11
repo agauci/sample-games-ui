@@ -110,6 +110,7 @@ module.exports = {
 		inline: true,
 		port: 5000,
 		hot: true,
+		allowedHosts: ['dev-local.imaginagaming.com'],
 		stats: {
 			modules: false
 		}
