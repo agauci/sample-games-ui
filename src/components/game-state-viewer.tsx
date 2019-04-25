@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Card, Row, Col } from 'antd';
 import { BaseComponent } from './base/base-component';
-import { GameClient, GameSessionServerState, GameSessionSharedState, GameActivity, GameRoundResult } from '@imagina/game-engine-client';
+import { GameClient, GameSessionServerState, GameSessionSharedState, GameActivity, GameResult } from '@imagina/game-engine-client';
 
 export interface GameStateViewerProps {
 	gameClient: GameClient<any, any, any, any, any>
@@ -11,7 +11,7 @@ export interface GameStateViewerState {
 	gameServerState?: GameSessionServerState<any, any>;
 	gameSharedState?: GameSessionSharedState<any>;
 	lastActivity?: GameActivity<any, any, any>;
-	lastActivityResults?: GameRoundResult<any>[];
+	lastActivityResults?: GameResult<any>[];
 }
 
 export class GameStateViewer extends BaseComponent<GameStateViewerProps, GameStateViewerState> {
@@ -24,10 +24,12 @@ export class GameStateViewer extends BaseComponent<GameStateViewerProps, GameSta
 	subscribeToGameClient = (gameClient: GameClient<any, any, any, any, any>) => {
 		this.addSubscriptions(
 			gameClient.selector.game.session.gameStateReady$.subscribe((state) => {
-				this.setState({
-					gameServerState: state.serverState,
-					gameSharedState: state.sharedState
-				});
+				if (state) {
+					this.setState({
+						gameServerState: state.serverState,
+						gameSharedState: state.sharedState
+					});
+				}
 			}),
 			gameClient.selector.game.activity.gameActivityDone$.subscribe(({ gameActivity, gameActivityResults }) => {
 				this.setState({

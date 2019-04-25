@@ -1,9 +1,8 @@
-
 .ant-card {
 	margin-bottom: 20px !important;
 }
 
-.game-interface {
+.game {
 
 	.loader {
 		padding: 50px;
@@ -63,21 +62,9 @@
 		font-size: 20px;
 	}
 
-	.bet {
+	.meters {
 		text-align: center;
-		padding: 10px;
-
-		.slick-slide {
-			text-align: center;
-			height: 100px;
-			overflow: hidden;
-		}
-	}
-
-	.credits {
-		text-align: center;
-		padding: 30px;
-
+	
 		h3 {
 			margin: 0;
 		}
@@ -86,11 +73,9 @@
 	.buttons {
 		text-align: center;
 		padding: 10px;
-		
 			.ant-btn {
 				margin: 10px !important;
-	}
-
+			}
 		}
 
 		.game-panel {
@@ -163,6 +148,10 @@
 		/* Opera */
 	}
 
+}
+
+.game-panel {
+	height: 40px;
 }
 
 .game-state-viewer {

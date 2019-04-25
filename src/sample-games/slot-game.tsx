@@ -12,7 +12,7 @@ import { Reel } from '../components/game/reel';
 
 export interface SlotGameState extends BaseGameState<MutualStatePayload, ProtectedStatePayload, BalancesPayload, GameRoundResultPayload> {
 	holdReels: number[];
-	bet: PlayerCoice;
+	betCredits: number;
 	betWin: boolean | null;
 	creditsBalance?: number;
 	reelsSpinning: boolean;
@@ -33,7 +33,6 @@ export interface ReelDictionary<Type> {
 export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload, BalancesPayload, GameRoundResultPayload, {}, SlotGameState> {
 
 	container: HTMLDivElement;
-	betReel: Carousel;
 	resultReels: Partial<ReelDictionary<Reel>> = {};
 	playerChoices: PlayerCoice[] = [PlayerCoice.BET_1, PlayerCoice.BET_5];
 
@@ -47,7 +46,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			gameStarted: false,
 			gameReady: false,
 			holdReels: [],
-			bet: PlayerCoice.BET_1,
+			betCredits: 1,
 			betWin: null,
 			firstBet: true,
 			prevWinBet: false,
@@ -87,7 +86,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 			this.gameClient.selector.game.activity.gameActivityStarted$.subscribe(() => {
 				// Set the state of the component to be ready for initializing an action
-				let betCredits = this.getBetCredits(this.state.bet);
+				let betCredits = this.state.betCredits;
 
 				this.setState({
 					gameState: undefined,
@@ -128,23 +127,16 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 				this.setState({
 					gameReady: gameReady
 				});
+			}),
+
+			this.gameClient.selector.game.global.betCredits$.subscribe(betCredits => {
+				this.setState({
+					betCredits: betCredits
+				});
 			})
 		);
 		// Dispatch start game action
 		this.gameClient.dispatcher.slotGame.startGame();
-	}
-
-	componentWillUpdate() {
-		// Upon game start set the game components in sync with the initial state
-		if (this.state.firstBet && this.state.gameState) {
-			// Set the bet to the initial state
-			if (this.betReel) {
-				switch (this.state.gameState.sharedState.mutualState.player_choice) {
-					case PlayerCoice.BET_1: this.betReel.goTo(0); break;
-					case PlayerCoice.BET_5: this.betReel.goTo(1); break;
-				}
-			}
-		}
 	}
 
 	isReelHeld = (reelIndex: number): boolean => includes(this.state.holdReels, reelIndex + 1);
@@ -185,27 +177,18 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 	}
 
 	changeBet = () => {
-		this.betReel.next();
+		// Let the game engine know that the frontend is ready from showing the result
+		this.gameClient.dispatcher.slotGame.nextGameChoice();
 	}
 
 	onChangeBet = (current: number) => {
 		this.setState({
-			bet: this.playerChoices[current]
+			betCredits: current
 		});
 	}
 
 	onBetClick = () => {
-		// Set up mutual state for the game activity
-		let mutualState: MutualStatePayload = {
-			player_choice: this.state.bet,
-			reels_to_hold: this.state.holdReels
-		};
-
-		// Dispatch new game activity with the mutual state
-		this.gameClient.dispatcher.slotGame.doActivity({
-			type: 'BET',
-			mutualState: mutualState
-		});
+		this.gameClient.dispatcher.slotGame.doReelSpin();
 	}
 
 	onSpinResultReady = (reelID: string) => {
@@ -216,7 +199,6 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 			if (reelsStopped.length === 3) {
 
 				// Update state to show win/loss and updated balance
-				console.log(this.state.gameResults);
 				this.setState({
 					betWin: !!(this.state.gameResults && this.state.gameResults.length),
 					holdReels: this.state.gameState.sharedState.mutualState.reels_to_hold || [],
@@ -262,36 +244,32 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 							</Row>
 						</Col>
 					</Row>
-					<Row>
-						<Col className='bet'>
+					<Row className='meters'>
+						<Col span={12}>
 							<h4>BET</h4>
-							<Carousel ref={(reel) => reel && (this.betReel = reel)} afterChange={this.onChangeBet}>
-								{this.playerChoices.map(bet => <div key={bet}><h3>{bet}</h3></div>)}
-							</Carousel>
+							<h3>{this.state.betCredits}</h3>
 						</Col>
-					</Row>
-					<Row>
-						<Col className='credits'>
+						<Col span={12}>
 							<h4>CREDITS</h4>
 							<h3>{this.state.creditsBalance}</h3>
 						</Col>
 					</Row>
-				</Col>
-			</Row>
-			<Row>
-				<Col className='buttons'>
-					<Button
-						type='primary'
-						size='large'
-						onClick={() => this.changeBet()}
-						disabled={!this.state.gameReady}
-					>CHANGE BET</Button>
-					<Button
-						type='primary'
-						size='large'
-						onClick={() => this.onBetClick()}
-						loading={!this.state.gameReady}
-					>SPIN REELS</Button>
+					<Row>
+						<Col className='buttons'>
+							<Button
+								type='primary'
+								size='large'
+								onClick={() => this.changeBet()}
+								disabled={!this.state.gameReady}
+							>CHANGE BET</Button>
+							<Button
+								type='primary'
+								size='large'
+								onClick={() => this.onBetClick()}
+								loading={!this.state.gameReady}
+							>SPIN REELS</Button>
+						</Col>
+					</Row>
 				</Col>
 			</Row>
 		</div>);

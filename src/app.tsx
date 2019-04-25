@@ -61,19 +61,20 @@ export class App extends React.Component<{}, AppState> {
 							<Switch>
 								<Route exact path='/random-game'>
 									<div>
-										<GameInterface gameComponent={RandomGame} />
+										<GameInterface gameClient={RandomGameClient} gameComponent={RandomGame} />
 										<GameStateViewer gameClient={RandomGameClient} />
 									</div>
 								</Route>
 								<Route exact path='/slot-game'>
 									<div>
-										<GameInterface gameComponent={SlotGame} />
+										<GameInterface gameClient={SlotGameClient} gameComponent={SlotGame} />
 										<GameStateViewer gameClient={SlotGameClient} />
 									</div>
 								</Route>
 							</Switch>
 						</Route>
 					</Switch>
+					
 				</Layout.Content>
 				<Layout.Footer style={{ textAlign: 'center' }}>
 					Imagina Sample Games
