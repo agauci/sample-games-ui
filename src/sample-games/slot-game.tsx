@@ -73,14 +73,6 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 					gameState,
 					creditsBalance: gameState!.serverState.balances.credits_meter
 				});
-				this.gameClient.dispatcher.slotGame.setNextActivity({
-					nextActivityParams: {
-						betCredits: this.getBetCredits(gameState!.sharedState.mutualState.player_choice),
-						type: 'BET',
-						mutualState: gameState!.sharedState.mutualState
-					},
-					autoPlayDelay: 2000
-				});
 				this.gameClient.dispatcher.slotGame.setGameReady();
 			}),
 
@@ -164,21 +156,12 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 	}
 
 	toggleReelHold = (reelIndex: number) => {
-		let holdReels;
-		if (this.isReelHeld(reelIndex)) {
-			this.state.holdReels.splice(this.state.holdReels.indexOf(reelIndex + 1), 1);
-			holdReels = this.state.holdReels;
-		} else {
-			holdReels = this.state.holdReels.length === 2 ? [reelIndex + 1] : [...this.state.holdReels, reelIndex + 1];
-		}
-		this.setState({
-			holdReels: holdReels
-		});
+		this.gameClient.dispatcher.slotGame.toggleReelHold(reelIndex + 1);
 	}
 
 	changeBet = () => {
 		// Let the game engine know that the frontend is ready from showing the result
-		this.gameClient.dispatcher.slotGame.nextGameChoice();
+		this.gameClient.dispatcher.slotGame.changeGameChoice();
 	}
 
 	onChangeBet = (current: number) => {
@@ -188,7 +171,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 	}
 
 	onBetClick = () => {
-		this.gameClient.dispatcher.slotGame.doReelSpin();
+		this.gameClient.dispatcher.slotGame.doSpinReels();
 	}
 
 	onSpinResultReady = (reelID: string) => {
@@ -206,15 +189,6 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 					reelsSpinning: false
 				});
 
-				// Let the game engine know that the frontend is ready from showing the result
-				this.gameClient.dispatcher.slotGame.setNextActivity({
-					nextActivityParams: {
-						betCredits: this.getBetCredits(this.state.gameState.sharedState.mutualState.player_choice),
-						type: 'BET',
-						mutualState: this.state.gameState.sharedState.mutualState
-					},
-					autoPlayDelay: 2000
-				});
 				this.gameClient.dispatcher.slotGame.setGameReady();
 			}
 		}

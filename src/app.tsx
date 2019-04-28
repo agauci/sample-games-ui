@@ -74,7 +74,6 @@ export class App extends React.Component<{}, AppState> {
 							</Switch>
 						</Route>
 					</Switch>
-					
 				</Layout.Content>
 				<Layout.Footer style={{ textAlign: 'center' }}>
 					Imagina Sample Games
