@@ -103,6 +103,15 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 				});
 			}),
 
+			this.gameClient.selector.game.activity.gameActivityFailed$.subscribe(({ gameState }) => {
+				// Set the state of the game component accordingly
+				this.setState({
+					gameState,
+					gameResults: [],
+					prevWinBet: false,
+				});
+			}),
+
 			// Subscribe to gameStarted$
 			// This will fire when both the game engine and the game interface are started
 			// It means that the interface is ready from loading the assets needed and the game engine is ready to accept the first activity
@@ -161,7 +170,7 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 
 	changeBet = () => {
 		// Let the game engine know that the frontend is ready from showing the result
-		this.gameClient.dispatcher.slotGame.changeGameChoice();
+		this.gameClient.dispatcher.slotGame.changeChoice();
 	}
 
 	onChangeBet = (current: number) => {
