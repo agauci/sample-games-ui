@@ -165,12 +165,12 @@ export class SlotGame extends BaseGame<MutualStatePayload, ProtectedStatePayload
 	}
 
 	toggleReelHold = (reelIndex: number) => {
-		this.gameClient.dispatcher.slotGame.toggleReelHold(reelIndex + 1);
+		this.gameClient.dispatcher.slotGame.toggleReelHold({ reelToHold: reelIndex + 1 });
 	}
 
 	changeBet = () => {
 		// Let the game engine know that the frontend is ready from showing the result
-		this.gameClient.dispatcher.slotGame.changeChoice();
+		this.gameClient.dispatcher.slotGame.changeChoice({});
 	}
 
 	onChangeBet = (current: number) => {
