@@ -61,21 +61,29 @@ export class GameStateViewer extends BaseComponent<GameStateViewerProps, GameSta
 		return <Card title='Game State Viewer' bordered={false}>
 			<div className='game-state-viewer'>
 				<Row>
-					<Col span={4}>
-						<h3>Server State</h3>
-						<pre>{JSON.stringify(this.state.gameServerState, null, 2)}</pre>
+					<Col span={12}>
+						<Row>
+							<Col lg={12}>
+								<h3>Shared State</h3>
+								<pre>{JSON.stringify(this.state.gameSharedState, null, 2)}</pre>
+							</Col>
+							<Col lg={12}>
+								<h3>Server State</h3>
+								<pre>{JSON.stringify(this.state.gameServerState, null, 2)}</pre>
+							</Col>
+						</Row>
 					</Col>
-					<Col span={4}>
-						<h3>Shared State</h3>
-						<pre>{JSON.stringify(this.state.gameSharedState, null, 2)}</pre>
-					</Col>
-					<Col span={8}>
-						<h3>Last Activity</h3>
-						<pre>{JSON.stringify(this.state.lastActivity, null, 2)}</pre>
-					</Col>
-					<Col span={8}>
-						<h3>Last Activity Results</h3>
-						<pre>{JSON.stringify(this.state.lastActivityResults, null, 2)}</pre>
+					<Col span={12}>
+						<Row>
+							<Col lg={12}>
+								<h3>Last Activity Results</h3>
+								<pre>{JSON.stringify(this.state.lastActivityResults, null, 2)}</pre>
+							</Col>
+							<Col lg={12}>
+								<h3>Last Activity</h3>
+								<pre>{JSON.stringify(this.state.lastActivity, null, 2)}</pre>
+							</Col>
+						</Row>
 					</Col>
 				</Row>
 			</div>

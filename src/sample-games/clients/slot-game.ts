@@ -7,4 +7,9 @@ export const SlotGameClient = new GameClient<MutualStatePayload, ProtectedStateP
 	gameMode: GameMode.REAL,
 	debug: true,
 	json: true
+}, {
+	slotGame: {
+		symbolsPerReel: 3,
+		betToGamble: ['BET_5']
+	}
 });

@@ -27,7 +27,8 @@ export interface MutualStatePayload {
 }
 
 export interface BalancesPayload {
-	credits_meter: number
+	credits_meter: number;
+	win_meter: number;
 }
 
 export interface GameRoundResultPayload {
